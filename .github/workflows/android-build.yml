@@ -41,7 +41,6 @@ jobs:
 
       - name: Install Android platform and build tools
         run: |
-          yes | sdkmanager --licenses >/dev/null
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
