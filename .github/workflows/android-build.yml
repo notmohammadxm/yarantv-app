@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-build-${gh}github.ref }}
+  group: android-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
