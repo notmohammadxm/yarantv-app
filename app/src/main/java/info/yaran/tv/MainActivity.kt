@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var pendingDownload: DownloadInfo? = null
 
-    private val storagePermissionLauncher by lazy(LazyThreadSafetyMode.NONE) {
+    private val storagePermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             val info = pendingDownload
             pendingDownload = null
@@ -79,7 +79,6 @@ class MainActivity : ComponentActivity() {
                 showToast("مجوز ذخیرهٔ فایل صادر نشد.")
             }
         }
-    }
 
     private val regularTypeface: Typeface by lazy(LazyThreadSafetyMode.NONE) {
         loadTypeface("fonts/Vazirmatn-Regular.ttf", Typeface.create("sans-serif", Typeface.NORMAL))
