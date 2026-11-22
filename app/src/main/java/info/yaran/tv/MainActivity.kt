@@ -36,6 +36,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.OnBackPressedCallback
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
@@ -67,6 +68,18 @@ class MainActivity : ComponentActivity() {
     private var mainFrameFailed = false
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var pendingDownload: DownloadInfo? = null
+
+    private val storagePermissionLauncher by lazy(LazyThreadSafetyMode.NONE) {
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            val info = pendingDownload
+            pendingDownload = null
+            if (granted && info != null) {
+                enqueueDownload(info)
+            } else if (info != null) {
+                showToast("مجوز ذخیرهٔ فایل صادر نشد.")
+            }
+        }
+    }
 
     private val regularTypeface: Typeface by lazy(LazyThreadSafetyMode.NONE) {
         loadTypeface("fonts/Vazirmatn-Regular.ttf", Typeface.create("sans-serif", Typeface.NORMAL))
@@ -128,7 +141,7 @@ class MainActivity : ComponentActivity() {
         webView = createWebView()
         swipeRefresh.addView(
             webView,
-            SwipeRefreshLayout.LayoutParams(
+            ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
@@ -535,7 +548,7 @@ class MainActivity : ComponentActivity() {
         webView = createWebView()
         swipeRefresh.addView(
             webView,
-            SwipeRefreshLayout.LayoutParams(
+            ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
@@ -561,10 +574,7 @@ class MainActivity : ComponentActivity() {
             PackageManager.PERMISSION_GRANTED
         ) {
             pendingDownload = info
-            requestPermissions(
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                STORAGE_PERMISSION_REQUEST
-            )
+            storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             return
         }
         enqueueDownload(info)
@@ -603,24 +613,6 @@ class MainActivity : ComponentActivity() {
             showToast("دانلود فایل آغاز شد.")
         } catch (_: Exception) {
             showToast("امکان آغاز دانلود وجود ندارد.")
-        }
-    }
-
-    @Deprecated("Permission callback for Android 8 and 9 downloads")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == STORAGE_PERMISSION_REQUEST) {
-            val info = pendingDownload
-            pendingDownload = null
-            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED && info != null) {
-                enqueueDownload(info)
-            } else {
-                showToast("مجوز ذخیرهٔ فایل صادر نشد.")
-            }
         }
     }
 
